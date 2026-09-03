@@ -302,6 +302,42 @@ function scheduleEditProcessing(plugin: ReactRNPlugin, remId: string, delay = 20
   pendingTimers.set(remId, timer);
 }
 
+// 探测并处理当前 Rem 以及粘贴可能产生的子 Rem 和后续同级兄弟 Rem
+async function processRemAndRelatives(plugin: ReactRNPlugin, startRemId: string) {
+  // 1. 处理当前被修改/粘贴首个的 Rem
+  scheduleEditProcessing(plugin, startRemId, 200);
+
+  try {
+    const startRem = await plugin.rem.findOne(startRemId);
+    if (!startRem) return;
+
+    // 2. 如果粘贴带缩进层级生成了子 Rem，处理子节点
+    const children = await startRem.getChildrenRem();
+    if (children && children.length > 0) {
+      for (let i = 0; i < children.length; i++) {
+        scheduleEditProcessing(plugin, children[i]._id, 250 + i * 20);
+      }
+    }
+
+    // 3. 检查父节点，处理紧随其后的同级兄弟 Rem
+    const parent = await startRem.getParentRem();
+    if (parent) {
+      const siblings = await parent.getChildrenRem();
+      const startIndex = siblings.findIndex((r) => r._id === startRemId);
+
+      if (startIndex !== -1) {
+        // 向后检查扫描最多 30 个连续的兄弟 Rem
+        const scanEnd = Math.min(siblings.length, startIndex + 31);
+        for (let i = startIndex + 1; i < scanEnd; i++) {
+          scheduleEditProcessing(plugin, siblings[i]._id, 250 + (i - startIndex) * 20);
+        }
+      }
+    }
+  } catch (err) {
+    console.error('[Format Color] Error scanning relative rems on paste:', err);
+  }
+}
+
 async function getRemIdFromEvent(plugin: ReactRNPlugin, event: any): Promise<string | undefined> {
   const candidate =
     event?.remId ?? event?._id ?? event?.id ?? event?.rem?._id ?? event?.rem?.id;
@@ -392,7 +428,7 @@ async function onActivate(plugin: ReactRNPlugin) {
     async (event) => {
       const remId = await getRemIdFromEvent(plugin, event);
       if (!remId) return;
-      scheduleEditProcessing(plugin, remId, 200);
+      await processRemAndRelatives(plugin, remId);
     }
   );
 }
