@@ -1,0 +1,22 @@
+{
+  "manifestVersion": 1,
+  "id": "format_color",
+  "name": "Format Color",
+  "author": "owqing",
+  "repoUrl": "https://github.com/owqing/remnote-format-color",
+  "version": {
+    "major": 0,
+    "minor": 1,
+    "patch": 1
+  },
+  "theme": [],
+  "enableOnMobile": false,
+  "description": "Automatically colors formatted text (Chinese, Italic, Bold, Underline) with custom text and highlight colors.",
+  "requestNative": false,
+  "requiredScopes": [
+    {
+      "type": "All",
+      "level": "ReadCreateModify"
+    }
+  ]
+}
