@@ -3,7 +3,7 @@
   "name": "remnote-format-color",
   "title": "Format Color",
   "description": "Automatically colors formatted text (Chinese, Italic, Bold, Underline) with custom text and highlight colors.",
-  "version": "0.1.3",
+  "version": "0.1.4",
   "license": "MIT",
   "scripts": {
     "check-types": "tsc",
